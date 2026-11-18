@@ -63,9 +63,11 @@ fun TelaJogo(
             val pergunta = lista[numero]
 
             Text("Pergunta ${numero + 1} de ${lista.size}")
-            Text(pergunta.emoji, fontSize = 80.sp)
+            // O emoji fica escondido (❓) até responder, para não entregar a resposta
+            Text(if (escolhida == null) "❓" else pergunta.emoji, fontSize = 80.sp)
+            Text("Qual é o prato?", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Text(
-                "Qual prato leva ${pergunta.dica}?",
+                "Dica: ${pergunta.dica}",
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center
             )

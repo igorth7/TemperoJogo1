@@ -4,8 +4,8 @@
 
 Quiz feito com **Kotlin + Jetpack Compose**, baseado no app Tempero.
 O jogador cria seu **perfil** (nome), escolhe o **nível** (Fácil, Médio ou Difícil) e
-responde 4 perguntas: aparece o emoji de um prato e os ingredientes, e ele escolhe a
-receita entre **5 alternativas**. Cada acerto vale 1 ponto.
+responde 4 perguntas: aparece uma **dica** sobre o prato (o emoji fica escondido como ❓
+até responder) e ele escolhe a receita entre **5 alternativas**. Cada acerto vale 1 ponto.
 No perfil aparecem: **nível do jogador** (sobe a cada 5 pontos), partidas e recorde.
 
 ## Como rodar
