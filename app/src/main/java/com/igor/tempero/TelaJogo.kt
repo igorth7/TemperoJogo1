@@ -1,6 +1,8 @@
 package com.igor.tempero
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,9 +43,10 @@ fun TelaJogo() {
             .fillMaxSize()
             .background(Creme)
             .systemBarsPadding()
+            .verticalScroll(rememberScrollState())   // rola se as 5 opções não couberem
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("🍲 Jogo do Tempero", fontSize = 28.sp, fontWeight = FontWeight.Bold)
         Text("Pontos: $pontos", fontSize = 20.sp, color = Laranja, fontWeight = FontWeight.Bold)
@@ -53,7 +56,7 @@ fun TelaJogo() {
             val pergunta = perguntas[numero]
 
             Text("Pergunta ${numero + 1} de ${perguntas.size}")
-            Text(pergunta.emoji, fontSize = 90.sp)
+            Text(pergunta.emoji, fontSize = 80.sp)
             Text(
                 "Qual prato leva ${pergunta.dica}?",
                 fontSize = 18.sp,

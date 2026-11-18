@@ -4,7 +4,7 @@
 
 Quiz simples feito com **Kotlin + Jetpack Compose**, baseado no app Tempero:
 aparece o emoji de um prato e os ingredientes, e o jogador escolhe qual é a receita
-entre 3 opções. Cada acerto vale 1 ponto. No fim mostra a pontuação e dá para jogar de novo.
+entre 5 alternativas. Cada acerto vale 1 ponto. No fim mostra a pontuação e dá para jogar de novo.
 
 ## Como rodar
 Abra a pasta `TemperoJogo` no Android Studio, espere o Gradle Sync e clique em **Run ▶**.
@@ -13,7 +13,7 @@ Abra a pasta `TemperoJogo` no Android Studio, espere o Gradle Sync e clique em *
 | Arquivo | O que faz |
 |---|---|
 | `MainActivity.kt` | Abre o app e chama a `TelaJogo()` |
-| `Pergunta.kt` | `data class Pergunta` + a lista com 5 perguntas |
+| `Pergunta.kt` | `data class Pergunta` + a lista com 12 perguntas |
 | `TelaJogo.kt` | A tela: estado com `remember { mutableStateOf() }`, `Column`, `Text` e `Button` |
 
 ## Como funciona
