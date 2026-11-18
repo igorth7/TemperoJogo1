@@ -1,0 +1,117 @@
+package com.igor.tempero
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+val Laranja = Color(0xFFE8622C)
+val Creme = Color(0xFFFFF8F1)
+val Verde = Color(0xFF2E7D32)
+val Vermelho = Color(0xFFC62828)
+
+// 3) A tela do jogo
+@Composable
+fun TelaJogo() {
+    // O estado do jogo: muda o valor -> a tela se redesenha sozinha
+    var numero by remember { mutableStateOf(0) }                 // qual pergunta estou
+    var pontos by remember { mutableStateOf(0) }                 // quantas acertei
+    var escolhida by remember { mutableStateOf<String?>(null) }  // o que o jogador tocou
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Creme)
+            .systemBarsPadding()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text("🍲 Jogo do Tempero", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text("Pontos: $pontos", fontSize = 20.sp, color = Laranja, fontWeight = FontWeight.Bold)
+
+        if (numero < perguntas.size) {
+            // ---------- JOGANDO ----------
+            val pergunta = perguntas[numero]
+
+            Text("Pergunta ${numero + 1} de ${perguntas.size}")
+            Text(pergunta.emoji, fontSize = 90.sp)
+            Text(
+                "Qual prato leva ${pergunta.dica}?",
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
+            )
+
+            // Um botão para cada opção
+            pergunta.opcoes.forEach { opcao ->
+                // Depois de responder: certa fica verde, a errada escolhida fica vermelha
+                val cor = when {
+                    escolhida == null -> Laranja
+                    opcao == pergunta.resposta -> Verde
+                    opcao == escolhida -> Vermelho
+                    else -> Color.Gray
+                }
+                Button(
+                    onClick = {
+                        if (escolhida == null) {
+                            escolhida = opcao
+                            if (opcao == pergunta.resposta) pontos++
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = cor)
+                ) {
+                    Text(opcao, fontSize = 18.sp)
+                }
+            }
+
+            // Mostra se acertou e o botão de próxima
+            if (escolhida != null) {
+                Text(
+                    if (escolhida == pergunta.resposta) "✅ Acertou!" else "❌ Errou! Era ${pergunta.resposta}",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Button(onClick = {
+                    numero++
+                    escolhida = null
+                }) {
+                    Text("Próxima ➜")
+                }
+            }
+        } else {
+            // ---------- FIM DE JOGO ----------
+            Text("🏆", fontSize = 90.sp)
+            Text("Fim de jogo!", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Você acertou $pontos de ${perguntas.size}", fontSize = 20.sp)
+            Button(
+                onClick = {
+                    numero = 0
+                    pontos = 0
+                    escolhida = null
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Laranja)
+            ) {
+                Text("Jogar de novo", fontSize = 18.sp)
+            }
+        }
+    }
+}
