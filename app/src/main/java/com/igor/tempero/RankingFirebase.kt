@@ -4,6 +4,10 @@ import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOf
 
 // Um resultado do ranking (o que fica salvo no Firebase)
 data class Resultado(val nome: String, val nivel: String, val pontos: Int)
@@ -29,30 +33,35 @@ object RankingFirebase {
             .addOnFailureListener { erro -> Log.e(TAG, "Erro ao salvar no Firebase", erro) }
     }
 
-    /** Busca os 10 melhores resultados (maior pontuação primeiro). */
-    fun buscarTop10(aoReceber: (List<Resultado>) -> Unit) {
-        if (!ConfigFirebase.configurado) {
-            aoReceber(emptyList())
-            return
-        }
+    /**
+     * FLOW: observa os 10 melhores resultados em tempo real.
+     * Toda vez que alguém salva uma partida, o Firestore avisa e o Flow
+     * emite a lista nova, então a tela de ranking se atualiza sozinha.
+     */
+    fun observarTop10(): Flow<List<Resultado>> {
+        if (!ConfigFirebase.configurado) return flowOf(emptyList())
 
-        Firebase.firestore.collection(COLECAO)
-            .orderBy("pontos", Query.Direction.DESCENDING)
-            .limit(10)
-            .get()
-            .addOnSuccessListener { resposta ->
-                val lista = resposta.documents.map { documento ->
-                    Resultado(
-                        nome = documento.getString("nome") ?: "?",
-                        nivel = documento.getString("nivel") ?: "",
-                        pontos = (documento.getLong("pontos") ?: 0L).toInt()
-                    )
+        return callbackFlow {
+            val ouvinte = Firebase.firestore.collection(COLECAO)
+                .orderBy("pontos", Query.Direction.DESCENDING)
+                .limit(10)
+                .addSnapshotListener { resposta, erro ->
+                    if (erro != null) {
+                        Log.e(TAG, "Erro ao observar o ranking", erro)
+                        return@addSnapshotListener
+                    }
+                    val lista = resposta?.documents?.map { documento ->
+                        Resultado(
+                            nome = documento.getString("nome") ?: "?",
+                            nivel = documento.getString("nivel") ?: "",
+                            pontos = (documento.getLong("pontos") ?: 0L).toInt()
+                        )
+                    } ?: emptyList()
+                    trySend(lista)   // manda a lista nova para quem está observando
                 }
-                aoReceber(lista)
-            }
-            .addOnFailureListener { erro ->
-                Log.e(TAG, "Erro ao buscar o ranking", erro)
-                aoReceber(emptyList())
-            }
+
+            // Quando a tela fecha, para de observar o Firestore
+            awaitClose { ouvinte.remove() }
+        }
     }
 }

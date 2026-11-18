@@ -14,12 +14,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,20 +25,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// 11) Ranking online: busca no Firebase os 10 melhores resultados
+// 11) Ranking online: observa (Flow) os 10 melhores resultados no Firebase
 @Composable
 fun TelaRanking(aoVoltar: () -> Unit) {
-    val ranking = remember { mutableStateListOf<Resultado>() }
-    var carregando by remember { mutableStateOf(true) }
-
-    // Quando a tela abre, busca no Firebase
-    LaunchedEffect(Unit) {
-        RankingFirebase.buscarTop10 { lista ->
-            ranking.clear()
-            ranking.addAll(lista)
-            carregando = false
-        }
-    }
+    // FLOW: a tela "escuta" o ranking. Quando o Firestore muda, a lista chega sozinha.
+    val fluxo = remember { RankingFirebase.observarTop10() }
+    val ranking by fluxo.collectAsState(initial = null)   // null = ainda carregando
+    val lista = ranking ?: emptyList()
 
     Column(
         modifier = Modifier
@@ -54,15 +44,15 @@ fun TelaRanking(aoVoltar: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text("🌐 Ranking online", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Text("Salvo no Firebase (Firestore)", color = Color.Gray)
+        Text("Firebase Firestore • atualiza em tempo real (Flow)", color = Color.Gray)
 
         when {
             !ConfigFirebase.configurado -> Text("⚠️ Firebase ainda não configurado (veja ConfigFirebase.kt)", color = Vermelho)
-            carregando -> Text("Carregando...")
-            ranking.isEmpty() -> Text("Ninguém jogou ainda. Seja o primeiro!")
+            ranking == null -> Text("Carregando...")
+            lista.isEmpty() -> Text("Ninguém jogou ainda. Seja o primeiro!")
         }
 
-        ranking.forEachIndexed { posicao, resultado ->
+        lista.forEachIndexed { posicao, resultado ->
             val medalha = when (posicao) {
                 0 -> "🥇"
                 1 -> "🥈"
