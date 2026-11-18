@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,14 +28,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// 5) Tela de perfil: nome, estatísticas e escolha do nível
+// 5) Tela de perfil: nome, estatísticas, nível, desafios e ranking
 @Composable
 fun TelaPerfil(
     perfil: Perfil,
     nivel: String,
     aoMudarNome: (String) -> Unit,
     aoEscolherNivel: (String) -> Unit,
-    aoComecar: () -> Unit
+    aoComecar: () -> Unit,
+    aoAbrirDesafios: () -> Unit,
+    aoAbrirRanking: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -106,6 +109,16 @@ fun TelaPerfil(
         }
         if (perfil.nome.isBlank()) {
             Text("Digite seu nome para começar", color = Color.Gray)
+        }
+
+        // Outras opções
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = aoAbrirDesafios, modifier = Modifier.weight(1f)) {
+                Text("🎯 Desafios")
+            }
+            OutlinedButton(onClick = aoAbrirRanking, modifier = Modifier.weight(1f)) {
+                Text("🌐 Ranking")
+            }
         }
     }
 }

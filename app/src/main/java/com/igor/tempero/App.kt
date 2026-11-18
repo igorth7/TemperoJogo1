@@ -9,31 +9,49 @@ import androidx.compose.runtime.setValue
 // 4) O App guarda o perfil e o nível, e decide qual tela mostrar
 @Composable
 fun App() {
-    var tela by remember { mutableStateOf("perfil") }    // "perfil" ou "jogo"
+    var tela by remember { mutableStateOf("perfil") }   // "perfil", "jogo", "desafios" ou "ranking"
     var perfil by remember { mutableStateOf(Perfil()) }
     var nivel by remember { mutableStateOf("Fácil") }
 
-    if (tela == "perfil") {
-        TelaPerfil(
+    // Só as perguntas do nível escolhido
+    val perguntasDoNivel = perguntas.filter { it.nivel == nivel }
+
+    when (tela) {
+        "perfil" -> TelaPerfil(
             perfil = perfil,
             nivel = nivel,
             aoMudarNome = { novoNome -> perfil = perfil.copy(nome = novoNome) },
             aoEscolherNivel = { escolhido -> nivel = escolhido },
-            aoComecar = { tela = "jogo" }
+            aoComecar = { tela = "jogo" },
+            aoAbrirDesafios = { tela = "desafios" },
+            aoAbrirRanking = { tela = "ranking" }
         )
-    } else {
-        TelaJogo(
+
+        "jogo" -> TelaJogo(
             nome = perfil.nome,
             nivel = nivel,
-            lista = perguntas.filter { it.nivel == nivel },   // só as perguntas do nível escolhido
+            lista = perguntasDoNivel,
             aoTerminar = { pontos ->
-                // Fim da partida: atualiza o perfil
+                // Fim da partida: atualiza o perfil...
+                val acertouTodas = pontos == perguntasDoNivel.size
                 perfil = perfil.copy(
                     partidas = perfil.partidas + 1,
                     recorde = maxOf(perfil.recorde, pontos),
-                    pontosTotais = perfil.pontosTotais + pontos
+                    pontosTotais = perfil.pontosTotais + pontos,
+                    gabaritos = if (acertouTodas) perfil.gabaritos + nivel else perfil.gabaritos
                 )
+                // ...e salva o resultado no Firebase (ranking online)
+                RankingFirebase.salvar(perfil.nome, nivel, pontos)
             },
+            aoVoltar = { tela = "perfil" }
+        )
+
+        "desafios" -> TelaDesafios(
+            perfil = perfil,
+            aoVoltar = { tela = "perfil" }
+        )
+
+        "ranking" -> TelaRanking(
             aoVoltar = { tela = "perfil" }
         )
     }
